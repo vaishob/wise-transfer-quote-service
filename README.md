@@ -158,14 +158,20 @@ PORT	3000	Port to run the API
 DB_PATH	./data/dev.sqlite	SQLite file location
 IDEMPOTENCY_TTL_HOURS	24	TTL window for reusing same idempotency key
 
+| Variable           | Default | Purpose     |
+------------------ | ------ | -------- |
+| `PORT`       | `3000`   | Port to run the API   |
+| `DB_PATH` | `./data/dev.sqlite`   | SQLite file location   |
+| `IDEMPOTENCY_TTL_HOURS`       | `24`    | TTL window for reusing same idempotency key      |
+
 Example:
-
+```bash
 PORT=3000 DB_PATH=./data/dev.sqlite npm run dev
-
+```
 Logging
 
 The service emits one JSON log line per request, e.g.
-
+```bash
 {
   "level": "info",
   "requestId": "req_01HT....",
@@ -175,7 +181,7 @@ The service emits one JSON log line per request, e.g.
   "latencyMs": 12,
   "idempotencyKey": "demo-key-123"
 }
-
+```
 
 This is meant to be:
 
@@ -186,57 +192,61 @@ safe (avoid PII)
 useful (requestId + latency + outcome)
 
 Running tests
+```bash
 npm test
-
+```
 
 Or watch mode:
-
+```bash
 npm run test:watch
-
+```
 What tests cover
 
-Quote creation returns required fields
-
-Retry returns the same quote for same key + same payload
-
-Conflict for same key + different payload
-
-Healthcheck returns OK
+- Quote creation returns required fields
+- Retry returns the same quote for same key + same payload
+- Conflict for same key + different payload
+- Healthcheck returns OK
 
 Running with Docker
 Build image
+```bash
 docker build -t wise-transfer-quote-service .
+```
 
 Run container
+```bash
 docker run --rm -p 3000:3000 wise-transfer-quote-service
+```
 
 Healthcheck
+```bash
 curl http://localhost:3000/healthz
-
+```
 
 Note: If your SQLite DB is stored inside the container filesystem, it will be ephemeral.
 To persist locally, bind mount a host directory (optional):
 
+```bash
 docker run --rm \
   -p 3000:3000 \
   -e DB_PATH=/app/data/dev.sqlite \
   -v "$(pwd)/data:/app/data" \
   wise-transfer-quote-service
+```
 
 How idempotency works (implementation notes)
 
 On POST /v1/quotes:
 
-Read Idempotency-Key header (required)
-
-Hash the request payload (e.g., stable JSON stringify + SHA-256)
-
-Look up existing record by idempotency key:
-
-If not found → compute quote, store, return 201
-
-If found and payloadHash matches → return stored quote (safe retry)
-
-If found and payloadHash differs → return 409 conflict
+1. Read Idempotency-Key header (required)
+2. Hash the request payload (e.g., stable JSON stringify + SHA-256)
+3. Look up existing record by idempotency key:
+    - If not found → compute quote, store, return 201
+    - If found and payloadHash matches → return stored quote (safe retry)
+    - If found and payloadHash differs → return 409 conflict
 
 This mirrors patterns used in payment/transfer systems where retries must not double-create state.
+
+License
+
+MIT (or your preferred license).
