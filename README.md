@@ -1,4 +1,4 @@
-# wise-transfer-quote-service
+# Wise Transfer Quote Service
 
 A small, production-minded backend service that creates **transfer quotes** (rate, fee, target amount) with **idempotency guarantees**, **structured JSON logging**, and **health checks** — designed to be built and extended in short, interview-style sessions.
 
